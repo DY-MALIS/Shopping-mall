@@ -29,7 +29,15 @@ function boot(storage = new Map()) {
   vm.createContext(context);vm.runInContext(source,context);
   return {app:context.app,el:element,storage,submit:id=>element(id).handlers.submit({preventDefault(){}})};
 }
+const fresh=boot();
+for(const key of ['products','transactions','cart','stockMovements','suppliers','manualCustomers']) assert.equal(fresh.app.state()[key].length,0,key);
+assert.equal(fresh.app.state().invoiceSeq,1);
+const old=new Map([['shop_data_v1',JSON.stringify({version:1,products:[{name:'Old item'}]})]]);
+const reset=boot(old);assert.equal(reset.app.state().products.length,0);
+assert.equal(JSON.parse(old.get('shop_data_v1')).version,2);
 const a=boot();
+for(let i=1;i<=9;i++) a.app.state().products.push({id:'p'+i,name:'Test '+i,cat:'Test',supplier:'',stock:10,reorder:2,price:2,sold30:0,barcode:i===1?'8801234500017':'test-'+i,expiry:null,promoPercent:0});
+for(let i=1;i<=4;i++) a.app.state().suppliers.push({id:'s'+i,name:'Supplier '+i,contact:'',phone:'',category:''});
 assert.equal(a.app.state().products.length,9);
 for(const [id,value] of Object.entries({pfName:'New product',pfCat:'__proto__',pfStock:'abc',pfReorder:'2',pfPrice:'1.25',pfPromo:'0',pfBarcode:'test-barcode'})) a.el(id).value=value;
 a.submit('productForm');assert.equal(a.app.state().products.length,9);

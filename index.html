@@ -479,7 +479,7 @@
       </button>
     </nav>
     <div class="sidebar-foot">
-      <div class="plan">កំណែសាកល្បង · ទិន្នន័យគំរូ</div>
+      <div class="plan">ប្រព័ន្ធគ្រប់គ្រងហាង</div>
     </div>
   </aside>
 
@@ -1114,18 +1114,8 @@
   function genBarcode(){ return "88" + Math.floor(1000000000 + Math.random()*8999999999).toString().slice(0,11); }
   function effPrice(p){ return p.promoPercent ? +(p.price*(1-p.promoPercent/100)).toFixed(2) : p.price; }
 
-  /* ================= Sample data (in-memory demo dataset) ================= */
-  var products = [
-    {id:"p1", name:"ស្រាបៀរ Cambodia កំប៉ុង", cat:"ភេសជ្ជៈ", supplier:"s1", stock:42, reorder:20, price:0.75, sold30:210, barcode:"8801234500017", expiry:null, promoPercent:0},
-    {id:"p2", name:"ប្រេងឆា Neptune ១លីត្រ", cat:"គ្រឿងទេស", supplier:"s2", stock:6,  reorder:15, price:3.20, sold30:150, barcode:"8801234500024", expiry:null, promoPercent:10},
-    {id:"p3", name:"អង្ករចន្ទដូង ៥គីឡូ", cat:"គ្រឿងទេស", supplier:"s2", stock:18, reorder:10, price:6.50, sold30:96, barcode:"8801234500031", expiry:addDays(new Date(),60), promoPercent:0},
-    {id:"p4", name:"ទឹកសុទ្ធ Kulen ៥០០ml", cat:"ភេសជ្ជៈ", supplier:"s1", stock:120,reorder:40, price:0.30, sold30:300, barcode:"8801234500048", expiry:null, promoPercent:0},
-    {id:"p5", name:"សាប៊ូកក់សក់ Sunsilk", cat:"អនាម័យ", supplier:"s3", stock:0,  reorder:12, price:2.10, sold30:64, barcode:"8801234500055", expiry:null, promoPercent:15},
-    {id:"p6", name:"នំបុ័ងសាំងវិច", cat:"នំបុ័ង", supplier:"s4", stock:9,  reorder:15, price:1.00, sold30:140, barcode:"8801234500062", expiry:addDays(new Date(),2), promoPercent:20},
-    {id:"p7", name:"ស្ករស កំពង់ស្ពឺ ១គីឡូ", cat:"គ្រឿងទេស", supplier:"s2", stock:25, reorder:10, price:1.80, sold30:80, barcode:"8801234500079", expiry:null, promoPercent:0},
-    {id:"p8", name:"ថ្នាំដុតមូស Baygon", cat:"គ្រឿងប្រើប្រាស់", supplier:"s3", stock:3, reorder:10, price:2.50, sold30:45, barcode:"8801234500086", expiry:null, promoPercent:0},
-    {id:"p9", name:"ទឹកដោះគោ Anchor ១លីត្រ", cat:"ភេសជ្ជៈ", supplier:"s1", stock:14, reorder:10, price:2.80, sold30:58, barcode:"8801234500093", expiry:addDays(new Date(),-1), promoPercent:0}
-  ];
+  /* ================= Empty store (ready for real data) ================= */
+  var products = [];
 
   var stockMovements = []; // {time, pid, pname, type:"in"|"out", qty, reason}
   function logMovement(p, type, qty, reason){
@@ -1133,35 +1123,18 @@
     stockMovements.unshift({time:new Date(), pid:p.id, pname:p.name, type:type, qty:qty, reason:reason});
   }
 
-  var suppliers = [
-    {id:"s1", name:"ក្រុមហ៊ុន Cambrew", contact:"លោក សុវណ្ណ", phone:"០១២ ៨៨៨ ១២៣", category:"ភេសជ្ជៈ"},
-    {id:"s2", name:"ហាងលក់ដុំ សុវណ្ណភូមិ", contact:"លោកស្រី ចាន់ធី", phone:"០៩៧ ៦៦៦ ៤៥៦", category:"គ្រឿងទេស"},
-    {id:"s3", name:"អគ្គិសនី-អនាម័យ ខេមបូឌា", contact:"លោក វិសាល", phone:"០៧០ ២២២ ៧៨៩", category:"អនាម័យ / គ្រឿងប្រើប្រាស់"},
-    {id:"s4", name:"រោងនំបុ័ង មង្គល", contact:"លោកស្រី សុភាព", phone:"០១៦ ៥៥៥ ៣២១", category:"នំបុ័ង"}
-  ];
+  var suppliers = [];
 
   var manualCustomers = []; // {name, phone} added manually via the Customers page
   var cart = []; // {pid, qty} for the POS page
 
   // 30 days of revenue history, oldest -> newest (today = last index)
-  var revenueHistory = [210,235,260,240,300,380,410,220,245,255,265,310,395,430,230,250,270,260,320,400,445,240,260,280,275,330,410,455,260,318];
-  var ordersHistory   = [22,25,27,24,31,39,42,23,26,27,28,32,40,44,24,26,28,27,33,41,46,25,27,29,28,34,42,47,27,33];
+  var revenueHistory = Array(30).fill(0);
+  var ordersHistory = Array(30).fill(0);
 
-  var customers = ["សុខ សំណាង","ចាន់ ស្រីនាង","វណ្ណ ដារា","ហេង សុភា","លី ចាន់ថា","កែវ សុគន្ធា","ម៉ាលី សុវណ្ណា","ធន់ ពិសិដ្ឋ"];
 
-  var transactions = [
-    {inv:"INV-1042", customer:"សុខ សំណាង", items:"ទឹកសុទ្ធ Kulen ×៦", amount:1.80, status:"paid", time: minsAgo(14)},
-    {inv:"INV-1041", customer:"ចាន់ ស្រីនាង", items:"ស្រាបៀរ Cambodia ×១២", amount:9.00, status:"paid", time: minsAgo(48)},
-    {inv:"INV-1040", customer:"វណ្ណ ដារា", items:"អង្ករចន្ទដូង ៥គីឡូ ×២", amount:13.00, status:"pending", time: minsAgo(95)},
-    {inv:"INV-1039", customer:"ហេង សុភា", items:"ប្រេងឆា Neptune ×១", amount:3.20, status:"paid", time: minsAgo(140)},
-    {inv:"INV-1038", customer:"លី ចាន់ថា", items:"នំបុ័ងសាំងវិច ×៤", amount:4.00, status:"paid", time: minsAgo(210)},
-    {inv:"INV-1037", customer:"កែវ សុគន្ធា", items:"ស្ករស កំពង់ស្ពឺ ×១", amount:1.80, status:"pending", time: minsAgo(260)},
-    {inv:"INV-1036", customer:"ម៉ាលី សុវណ្ណា", items:"ថ្នាំដុតមូស Baygon ×២", amount:5.00, status:"paid", time: minsAgo(320)},
-    {inv:"INV-1035", customer:"ធន់ ពិសិដ្ឋ", items:"ទឹកសុទ្ធ Kulen ×១២", amount:3.60, status:"paid", time: minsAgo(390)},
-    {inv:"INV-1034", customer:"សុខ សំណាង", items:"ស្រាបៀរ Cambodia ×៦", amount:4.50, status:"pending", time: minsAgo(460)},
-    {inv:"INV-1033", customer:"ចាន់ ស្រីនាង", items:"អង្ករចន្ទដូង ៥គីឡូ ×១", amount:6.50, status:"paid", time: minsAgo(520)}
-  ];
-  var invoiceSeq = 1043;
+  var transactions = [];
+  var invoiceSeq = 1;
 
   function minsAgo(m){ return new Date(Date.now() - m*60000); }
   function fmtTime(d){
@@ -1179,7 +1152,7 @@
   function saveData(){
     if(!dataReady || storageBlocked) return;
     try{
-      localStorage.setItem("shop_data_v1", JSON.stringify({version:1, products:products,
+      localStorage.setItem("shop_data_v1", JSON.stringify({version:2, products:products,
         suppliers:suppliers, manualCustomers:manualCustomers, cart:cart,
         stockMovements:stockMovements, transactions:transactions, invoiceSeq:invoiceSeq,
         revenueHistory:revenueHistory, ordersHistory:ordersHistory, historyDate:historyDate}));
@@ -1194,8 +1167,10 @@
       var raw = localStorage.getItem("shop_data_v1");
       if(!raw) return;
       var d = JSON.parse(raw);
+      // One-time owner-requested reset of the previous dataset. New records survive reloads.
+      if(d.version === 1) return;
       var arrays = ["products","suppliers","manualCustomers","cart","stockMovements","transactions","revenueHistory","ordersHistory"];
-      if(d.version !== 1 || !arrays.every(function(k){ return Array.isArray(d[k]); }) ||
+      if(d.version !== 2 || !arrays.every(function(k){ return Array.isArray(d[k]); }) ||
          !Number.isSafeInteger(d.invoiceSeq) || d.invoiceSeq < 1 ||
          d.revenueHistory.length !== 30 || d.ordersHistory.length !== 30) throw Error("Invalid data");
       function nonnegative(n){ return Number.isFinite(n) && n >= 0; }
