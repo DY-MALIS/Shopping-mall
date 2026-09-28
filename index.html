@@ -339,6 +339,12 @@
   .stat-mini{ padding:14px 16px; }
   .stat-mini .lbl{ font-size:12px; color:var(--ink-2); }
   .stat-mini .val{ font-size:19px; font-weight:700; margin-top:4px; }
+  .compare-chart-scroll{ overflow-x:auto; margin-top:10px; padding-bottom:4px; }
+  .compare-chart-scroll svg{ width:100%; min-width:720px; height:310px; display:block; }
+  .compare-legend{ display:flex; gap:18px; flex-wrap:wrap; margin-top:8px; color:var(--ink-2); font-size:12px; }
+  .compare-legend span{ display:inline-flex; align-items:center; gap:6px; }
+  .legend-swatch{ width:10px; height:10px; border-radius:3px; display:inline-block; }
+  .compare-summary{ font-size:12px; color:var(--ink-2); margin-top:5px; }
 
   /* ---------- inventory ---------- */
   .stock-adjust{ display:inline-flex; align-items:center; gap:6px; }
@@ -805,6 +811,19 @@
 
       <div id="page-reports" hidden>
         <section class="stat-mini-row" id="reportStats"></section>
+
+        <section class="card chart-card" style="margin-top:14px;padding-bottom:18px;">
+          <div class="page-head-row card-head">
+            <div><div class="card-title">ក្រាបប្រៀបធៀបចំណូល និងចំណេញ</div><div class="card-sub" id="compareChartSub">ប្រៀបធៀបពីខែមួយទៅខែមួយ</div><div class="compare-summary" id="compareSummary"></div></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <select class="range-select" id="reportCompareMode"><option value="monthly">ប្រៀបធៀបតាមខែ</option><option value="yearly">ប្រៀបធៀបតាមឆ្នាំ</option></select>
+              <select class="range-select" id="reportYear" aria-label="ជ្រើសឆ្នាំ"></select>
+            </div>
+          </div>
+          <div class="compare-chart-scroll"><svg id="compareSvg" viewBox="0 0 960 310" role="img" aria-label="ក្រាបប្រៀបធៀបចំណូល និងចំណេញ"></svg></div>
+          <div class="compare-legend"><span><i class="legend-swatch" style="background:var(--blue);"></i>ចំណូលលក់</span><span><i class="legend-swatch" style="background:var(--good);"></i>ចំណេញសុទ្ធ</span><span><i class="legend-swatch" style="background:var(--critical);"></i>ខាតបង់</span></div>
+          <div class="table-scroll" style="margin-top:12px;"><table><thead><tr><th>រយៈពេល</th><th>ចំណូល</th><th>ថ្លៃដើម</th><th>ចំណាយ</th><th>ចំណេញសុទ្ធ</th><th>បម្រែបម្រួលចំណូល</th></tr></thead><tbody id="compareTableBody"></tbody></table></div>
+        </section>
 
         <section class="row-2" style="margin-top:14px;">
           <div class="card list-card">
@@ -2673,6 +2692,64 @@
   function statMini(label, val){
     return '<div class="card stat-mini"><div class="lbl">'+label+'</div><div class="val tab">'+val+'</div></div>';
   }
+  var KH_MONTHS=["មករា","កុម្ភៈ","មីនា","មេសា","ឧសភា","មិថុនា","កក្កដា","សីហា","កញ្ញា","តុលា","វិច្ឆិកា","ធ្នូ"];
+  function totalsBetween(start,end){
+    var tx=transactions.filter(function(t){var ms=new Date(t.time).getTime();return ms>=start.getTime()&&ms<end.getTime();});
+    var ex=expenses.filter(function(x){var ms=new Date(x.time).getTime();return ms>=start.getTime()&&ms<end.getTime();});
+    var revenue=tx.reduce(function(s,t){return s+t.amount;},0),cost=tx.reduce(function(s,t){return s+(t.cost||0);},0),expense=ex.reduce(function(s,x){return s+x.amount;},0);
+    return {revenue:revenue,cost:cost,expense:expense,profit:revenue-cost-expense};
+  }
+  function monthlyTotals(year,month){return totalsBetween(new Date(year,month,1),new Date(year,month+1,1));}
+  function yearlyTotals(year){return totalsBetween(new Date(year,0,1),new Date(year+1,0,1));}
+  function comparisonYears(){
+    var current=new Date().getFullYear(),map=Object.create(null);map[current]=true;map[current-1]=true;
+    transactions.forEach(function(t){var y=new Date(t.time).getFullYear();if(Number.isFinite(y))map[y]=true;});
+    expenses.forEach(function(x){var y=new Date(x.time).getFullYear();if(Number.isFinite(y))map[y]=true;});
+    return Object.keys(map).map(Number).sort(function(a,b){return a-b;});
+  }
+  function axisMoney(n){
+    var value=settings.currency==="khr"?n*4100:n,sign=value<0?"-":"",abs=Math.abs(value),text=abs>=1000000?(abs/1000000).toFixed(1)+"M":abs>=1000?(abs/1000).toFixed(1)+"K":Math.round(abs).toString();
+    return sign+(settings.currency==="khr"?text+"៛":"$"+text);
+  }
+  function growthText(current,previous){
+    if(!previous)return current?"ថ្មី":"0.0%";
+    var pct=(current-previous)/previous*100;return (pct>=0?"▲ ":"▼ ")+Math.abs(pct).toFixed(1)+"%";
+  }
+  function renderComparisonChart(){
+    var modeEl=document.getElementById("reportCompareMode"),yearEl=document.getElementById("reportYear");
+    if(modeEl.value!=="yearly")modeEl.value="monthly";
+    var years=comparisonYears(),currentYear=new Date().getFullYear(),selected=parseInt(yearEl.value,10);
+    yearEl.innerHTML=years.slice().reverse().map(function(y){return '<option value="'+y+'">ឆ្នាំ '+y+'</option>';}).join("");
+    if(years.indexOf(selected)<0)selected=currentYear;yearEl.value=String(selected);yearEl.disabled=modeEl.value==="yearly";
+    var data=[],previousRevenue=0;
+    if(modeEl.value==="monthly"){
+      for(var m=0;m<12;m++){var mt=monthlyTotals(selected,m);mt.label=KH_MONTHS[m];mt.short=KH_MONTHS[m];data.push(mt);}
+      previousRevenue=monthlyTotals(selected-1,11).revenue;
+      document.getElementById("compareChartSub").textContent="ប្រៀបធៀបខែនីមួយៗក្នុងឆ្នាំ "+selected;
+    }else{
+      data=years.map(function(y){var yt=yearlyTotals(y);yt.label="ឆ្នាំ "+y;yt.short=String(y);return yt;});
+      previousRevenue=yearlyTotals(years[0]-1).revenue;
+      document.getElementById("compareChartSub").textContent="ប្រៀបធៀបលទ្ធផលពីឆ្នាំមួយទៅឆ្នាំមួយ";
+    }
+    var totalRevenue=data.reduce(function(s,d){return s+d.revenue;},0),totalProfit=data.reduce(function(s,d){return s+d.profit;},0),best=data.reduce(function(a,b){return !a||b.revenue>a.revenue?b:a;},null);
+    document.getElementById("compareSummary").textContent="ចំណូលសរុប "+fmtMoney(totalRevenue)+" · ចំណេញសុទ្ធ "+fmtMoney(totalProfit)+(best&&best.revenue>0?" · ល្អបំផុត៖ "+best.label+" ("+fmtMoney(best.revenue)+")":"");
+    var W=960,H=310,left=62,right=18,top=16,bottom=48,plotW=W-left-right,plotH=H-top-bottom;
+    var maxV=Math.max.apply(null,[1].concat(data.map(function(d){return Math.max(d.revenue,d.profit,0);}))),minV=Math.min.apply(null,[0].concat(data.map(function(d){return d.profit;}))),range=maxV-minV||1;
+    function y(v){return top+(maxV-v)/range*plotH;}
+    var zeroY=y(0),svg="";
+    for(var g=0;g<=5;g++){var val=maxV-range*g/5,gy=y(val);svg+='<line x1="'+left+'" y1="'+gy+'" x2="'+(W-right)+'" y2="'+gy+'" stroke="var(--line)"/><text x="'+(left-8)+'" y="'+(gy+4)+'" text-anchor="end" font-size="11" fill="var(--ink-muted)">'+axisMoney(val)+'</text>';}
+    var groupW=plotW/data.length,barW=Math.min(24,groupW*.28);
+    data.forEach(function(d,i){
+      var cx=left+groupW*(i+.5),ry=y(d.revenue),rh=Math.max(0,zeroY-ry),py=d.profit>=0?y(d.profit):zeroY,ph=Math.max(0,Math.abs(y(d.profit)-zeroY)),profitColor=d.profit<0?"var(--critical)":"var(--good)";
+      svg+='<rect x="'+(cx-barW-2)+'" y="'+ry+'" width="'+barW+'" height="'+rh+'" rx="3" fill="var(--blue)"><title>'+d.label+' — ចំណូល '+fmtMoney(d.revenue)+'</title></rect>';
+      svg+='<rect x="'+(cx+2)+'" y="'+py+'" width="'+barW+'" height="'+ph+'" rx="3" fill="'+profitColor+'"><title>'+d.label+' — ចំណេញសុទ្ធ '+fmtMoney(d.profit)+'</title></rect>';
+      svg+='<text x="'+cx+'" y="'+(H-22)+'" text-anchor="middle" font-size="11" fill="var(--ink-muted)">'+escapeHtml(d.short)+'</text>';
+    });
+    svg+='<line x1="'+left+'" y1="'+zeroY+'" x2="'+(W-right)+'" y2="'+zeroY+'" stroke="var(--line-strong)"/>';
+    document.getElementById("compareSvg").innerHTML=svg;
+    var prev=previousRevenue;
+    document.getElementById("compareTableBody").innerHTML=data.map(function(d){var growth=growthText(d.revenue,prev),up=growth.indexOf("▼")!==0;prev=d.revenue;return '<tr><td class="cust-cell">'+escapeHtml(d.label)+'</td><td class="tab">'+fmtMoney(d.revenue)+'</td><td class="tab">'+fmtMoney(d.cost)+'</td><td class="tab">'+fmtMoney(d.expense)+'</td><td class="tab" style="color:'+(d.profit<0?'var(--critical)':'var(--good-text)')+';font-weight:700;">'+fmtMoney(d.profit)+'</td><td class="tab" style="color:'+(up?'var(--good-text)':'var(--critical)')+';">'+growth+'</td></tr>';}).join("");
+  }
   function renderReportsPage(){
     var allRevenue = transactions.reduce(function(s,t){ return s+t.amount; }, 0);
     var paidRevenue = transactions.reduce(function(s,t){return s+(t.paidAmount||0);},0);
@@ -2684,6 +2761,7 @@
       statMini("ថ្លៃដើមទំនិញលក់", fmtMoney(cogs)) +
       statMini("ចំណាយហាង", fmtMoney(exp)) +
       statMini("ចំណេញសុទ្ធ", fmtMoney(netProfit));
+    renderComparisonChart();
 
     var catMap = Object.create(null);
     products.forEach(function(p){ catMap[p.cat] = (catMap[p.cat]||0) + p.price*p.sold30; });
@@ -2708,6 +2786,8 @@
       return '<tr><td class="cust-cell">'+escapeHtml(c.name)+'</td><td class="tab">'+c.orders+'</td><td class="tab">'+fmtMoney(c.spent)+'</td></tr>';
     }).join("") || '<tr class="empty-row"><td colspan="3">គ្មានទិន្នន័យទេ</td></tr>';
   }
+  document.getElementById("reportCompareMode").addEventListener("change",renderReportsPage);
+  document.getElementById("reportYear").addEventListener("change",renderReportsPage);
 
   /* ================= Settings page ================= */
   function renderSettingsPage(){

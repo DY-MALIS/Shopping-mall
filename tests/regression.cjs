@@ -61,7 +61,13 @@ for(const [id,value] of Object.entries({saleProduct:'p-op',saleQty:'1',saleCusto
 op.submit('saleForm');assert.equal(op.app.state().transactions[0].paidAmount,0);
 for(const [id,value] of Object.entries({debtCustomer:'Debt customer',debtAmount:'1',debtDate:'2026-09-28',debtPaymentMethod:'khqr'}))op.el(id).value=value;
 op.submit('debtPaymentForm');assert.equal(op.app.state().transactions[0].paidAmount,1);assert.equal(op.app.state().debtPayments[0].amount,1);
-const opReload=boot(op.storage);assert.equal(opReload.app.state().purchases.length,1);assert.equal(opReload.app.state().expenses.length,1);assert.equal(opReload.app.state().debtPayments.length,1);
+op.app.state().transactions.push({inv:'INV-HIST-1',customer:'History',items:'Item',amount:100,cost:60,paidAmount:100,paymentMethod:'cash',status:'paid',time:new Date(2025,0,15)});
+op.app.state().transactions.push({inv:'INV-HIST-2',customer:'History',items:'Item',amount:150,cost:80,paidAmount:150,paymentMethod:'cash',status:'paid',time:new Date(2025,1,15)});
+op.app.state().expenses.push({id:'EXP-HIST',date:'2025-02-10',category:'Test',description:'Monthly expense',paymentMethod:'cash',amount:10,time:new Date(2025,1,10)});
+op.el('reportCompareMode').value='monthly';op.el('reportYear').value='2025';op.app.renderAll();
+assert.ok(op.el('compareSvg').innerHTML.includes('មករា'));assert.ok(op.el('compareTableBody').innerHTML.includes('$100.00'));assert.ok(op.el('compareTableBody').innerHTML.includes('$60.00'));
+op.el('reportCompareMode').value='yearly';op.app.renderAll();assert.ok(op.el('compareTableBody').innerHTML.includes('ឆ្នាំ 2025'));
+const opReload=boot(op.storage);assert.equal(opReload.app.state().purchases.length,1);assert.equal(opReload.app.state().expenses.length,2);assert.equal(opReload.app.state().debtPayments.length,1);
 for (const bad of ['abc','12abc','-1','1.5','Infinity','1e309','']) {
   a.el('saleQty').value=bad;
   assert.equal(a.app.readNumber('saleQty',1,100,true),null,bad);
