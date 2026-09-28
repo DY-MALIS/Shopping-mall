@@ -470,6 +470,14 @@
         <svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6"/></svg>
         អ្នកផ្គត់ផ្គង់
       </button>
+      <button class="nav-item" data-page="purchases">
+        <svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h2l2.4 11.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 2-1.6L21 7H7"/><circle cx="10" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg>
+        ការទិញចូល
+      </button>
+      <button class="nav-item" data-page="finance">
+        <svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 15h4M3 9h18"/></svg>
+        ហិរញ្ញវត្ថុ
+      </button>
       <button class="nav-item" data-page="reports">
         <svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V9M11 19V4M18 19v-7"/><path d="M3 19h18"/></svg>
         របាយការណ៍
@@ -633,7 +641,8 @@
                     <th data-isort="name">ទំនិញ <span class="arrow"></span></th>
                     <th data-isort="cat">ប្រភេទ <span class="arrow"></span></th>
                     <th data-isort="stock">ស្តុក <span class="arrow"></span></th>
-                    <th data-isort="price">តម្លៃ <span class="arrow"></span></th>
+                    <th data-isort="costPrice">តម្លៃដើម <span class="arrow"></span></th>
+                    <th data-isort="price">តម្លៃលក់ <span class="arrow"></span></th>
                     <th data-isort="sold30">លក់ (៣០ថ្ងៃ) <span class="arrow"></span></th>
                     <th>ស្ថានភាព</th>
                     <th>សកម្មភាព</th>
@@ -706,6 +715,10 @@
                 <option value="pending">មិនទាន់ទូទាត់</option>
               </select>
             </div>
+            <div class="field">
+              <label>វិធីទូទាត់</label>
+              <select id="posPaymentMethod"><option value="cash">សាច់ប្រាក់</option><option value="khqr">KHQR</option><option value="aba">ABA</option><option value="acleda">ACLEDA</option><option value="card">កាត</option><option value="other">ផ្សេងៗ</option></select>
+            </div>
             <button class="btn btn-brand" id="checkoutBtn" style="width:100%;justify-content:center;">បញ្ចប់ការលក់</button>
           </section>
         </div>
@@ -732,7 +745,7 @@
           <div class="table-scroll">
             <table>
               <thead><tr>
-                <th>អតិថិជន</th><th>ទូរស័ព្ទ</th><th>ចំនួនកម្មង់</th><th>ចំណាយសរុប</th><th>ការទិញចុងក្រោយ</th>
+                <th>អតិថិជន</th><th>ទូរស័ព្ទ</th><th>ចំនួនកម្មង់</th><th>ចំណាយសរុប</th><th>បំណុលនៅសល់</th><th>ការទិញចុងក្រោយ</th>
               </tr></thead>
               <tbody id="custBody"></tbody>
             </table>
@@ -755,10 +768,37 @@
           <div class="table-scroll">
             <table>
               <thead><tr>
-                <th>ឈ្មោះក្រុមហ៊ុន</th><th>អ្នកទំនាក់ទំនង</th><th>ទូរស័ព្ទ</th><th>ប្រភេទផ្គត់ផ្គង់</th><th>ចំនួនទំនិញ</th>
+                <th>ឈ្មោះក្រុមហ៊ុន</th><th>អ្នកទំនាក់ទំនង</th><th>ទូរស័ព្ទ</th><th>ប្រភេទផ្គត់ផ្គង់</th><th>ចំនួនទំនិញ</th><th>នៅជំពាក់</th>
               </tr></thead>
               <tbody id="suppBody"></tbody>
             </table>
+          </div>
+        </section>
+      </div>
+
+      <div id="page-purchases" hidden>
+        <section class="card table-card">
+          <div class="page-head-row card-head">
+            <div><div class="card-title">ការទិញចូល</div><div class="card-sub" id="purchaseSummary">ការបញ្ជាទិញ និងទទួលស្តុកពីអ្នកផ្គត់ផ្គង់</div></div>
+            <button type="button" class="btn btn-brand" id="addPurchaseBtn">+ កត់ត្រាការទិញចូល</button>
+          </div>
+          <div class="table-scroll"><table>
+            <thead><tr><th>កាលបរិច្ឆេទ</th><th>ទំនិញ</th><th>អ្នកផ្គត់ផ្គង់</th><th>ចំនួន</th><th>តម្លៃដើម/ឯកតា</th><th>សរុប</th><th>បានបង់</th><th>នៅជំពាក់</th></tr></thead>
+            <tbody id="purchaseBody"></tbody>
+          </table></div>
+        </section>
+      </div>
+
+      <div id="page-finance" hidden>
+        <section class="stat-mini-row" id="financeStats"></section>
+        <section class="row-2" style="margin-top:14px;">
+          <div class="card table-card">
+            <div class="page-head-row card-head"><div><div class="card-title">ចំណាយហាង</div><div class="card-sub">ជួល ភ្លើង ទឹក ដឹកជញ្ជូន និងចំណាយផ្សេងៗ</div></div><button type="button" class="btn btn-brand" id="addExpenseBtn">+ កត់ចំណាយ</button></div>
+            <div class="table-scroll"><table><thead><tr><th>ថ្ងៃ</th><th>ប្រភេទ</th><th>បរិយាយ</th><th>ទឹកប្រាក់</th><th>វិធីទូទាត់</th></tr></thead><tbody id="expenseBody"></tbody></table></div>
+          </div>
+          <div class="card table-card">
+            <div class="page-head-row card-head"><div><div class="card-title">ការទទួលបំណុលអតិថិជន</div><div class="card-sub">ការបង់ប្រាក់ក្រោយការលក់ជំពាក់</div></div><button type="button" class="btn btn-brand" id="addDebtPaymentBtn">+ ទទួលប្រាក់បំណុល</button></div>
+            <div class="table-scroll"><table><thead><tr><th>ថ្ងៃ</th><th>អតិថិជន</th><th>ទឹកប្រាក់</th><th>វិធីទូទាត់</th></tr></thead><tbody id="debtPaymentBody"></tbody></table></div>
           </div>
         </section>
       </div>
@@ -839,6 +879,11 @@
               </label>
             </div>
           </section>
+          <section class="card settings-card">
+            <div class="card-title" style="margin-bottom:4px;">បម្រុងទុកទិន្នន័យ</div>
+            <div class="card-sub" style="margin-bottom:14px;">ទាញយកទិន្នន័យហាងទាំងអស់ ឬស្ដារពីឯកសារ JSON</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" class="btn btn-ghost" id="exportBackupBtn">ទាញយកឯកសារបម្រុង</button><label class="btn btn-brand" for="importBackupFile" style="cursor:pointer;">ស្ដារទិន្នន័យ</label><input id="importBackupFile" type="file" accept=".json,application/json" hidden></div>
+          </section>
         </div>
       </div>
 
@@ -872,6 +917,10 @@
             <option value="pending">មិនទាន់ទូទាត់</option>
           </select>
         </div>
+      </div>
+      <div class="field">
+        <label>វិធីទូទាត់</label>
+        <select id="salePaymentMethod"><option value="cash">សាច់ប្រាក់</option><option value="khqr">KHQR</option><option value="aba">ABA</option><option value="acleda">ACLEDA</option><option value="card">កាត</option><option value="other">ផ្សេងៗ</option></select>
       </div>
       <div class="field">
         <label>អតិថិជន (មិនបង្ខំ)</label>
@@ -914,7 +963,10 @@
         <div class="field"><label>ស្តុកបច្ចុប្បន្ន</label><input class="text-input numeric-input" type="text" inputmode="numeric" id="pfStock" min="0" required></div>
         <div class="field"><label>កម្រិតបញ្ជាទិញ</label><input class="text-input numeric-input" type="text" inputmode="numeric" id="pfReorder" min="0" required></div>
       </div>
-      <div class="field"><label>តម្លៃលក់ ($)</label><input class="text-input numeric-input" type="text" inputmode="decimal" id="pfPrice" min="0" step="0.01" required></div>
+      <div class="field-row">
+        <div class="field"><label>តម្លៃដើម/ទិញ ($)</label><input class="text-input numeric-input" type="text" inputmode="decimal" id="pfCost" min="0" step="0.01" required></div>
+        <div class="field"><label>តម្លៃលក់ ($)</label><input class="text-input numeric-input" type="text" inputmode="decimal" id="pfPrice" min="0" step="0.01" required></div>
+      </div>
       <div class="field-row">
         <div class="field"><label>បាកូដ (មិនបង្ខំ)</label><input class="text-input tab numeric-input" type="text" id="pfBarcode" placeholder="ស្កេន ឬទុកឲ្យទទេ"></div>
         <div class="field"><label>ថ្ងៃផុតកំណត់ (មិនបង្ខំ)</label><input class="text-input" type="date" id="pfExpiry"></div>
@@ -927,6 +979,38 @@
     </form>
   </div>
 </div>
+
+<div class="modal-overlay" id="purchaseModalOverlay"><div class="modal">
+  <div class="modal-head"><div class="modal-title">កត់ត្រាការទិញចូល</div><button type="button" class="modal-x" id="purchaseModalClose">✕</button></div>
+  <form id="purchaseForm">
+    <div class="field"><label>ទំនិញ</label><select id="purchaseProduct" required></select></div>
+    <div class="field"><label>អ្នកផ្គត់ផ្គង់</label><select id="purchaseSupplier"><option value="">មិនបានកំណត់</option></select></div>
+    <div class="field-row"><div class="field"><label>ចំនួនទិញ</label><input class="text-input numeric-input" inputmode="numeric" id="purchaseQty" value="1" required></div><div class="field"><label>តម្លៃដើម/ឯកតា ($)</label><input class="text-input numeric-input" inputmode="decimal" id="purchaseUnitCost" required></div></div>
+    <div class="field-row"><div class="field"><label>បានបង់ ($)</label><input class="text-input numeric-input" inputmode="decimal" id="purchasePaid" value="0" required></div><div class="field"><label>កាលបរិច្ឆេទ</label><input class="text-input" type="date" id="purchaseDate" required></div></div>
+    <div class="amount-preview"><span>ទឹកប្រាក់សរុប</span><b id="purchasePreview">$0.00</b></div>
+    <div class="modal-actions"><button type="button" class="btn btn-ghost" id="purchaseCancel">បោះបង់</button><button type="submit" class="btn btn-brand">រក្សាទុកការទិញ</button></div>
+  </form>
+</div></div>
+
+<div class="modal-overlay" id="expenseModalOverlay"><div class="modal">
+  <div class="modal-head"><div class="modal-title">កត់ត្រាចំណាយហាង</div><button type="button" class="modal-x" id="expenseModalClose">✕</button></div>
+  <form id="expenseForm">
+    <div class="field-row"><div class="field"><label>កាលបរិច្ឆេទ</label><input class="text-input" type="date" id="expenseDate" required></div><div class="field"><label>ប្រភេទចំណាយ</label><select id="expenseCategory"><option>ជួល</option><option>ភ្លើង និងទឹក</option><option>ដឹកជញ្ជូន</option><option>ប្រាក់ខែ</option><option>ថែទាំ</option><option>ផ្សេងៗ</option></select></div></div>
+    <div class="field"><label>បរិយាយ</label><input class="text-input" id="expenseDescription" required></div>
+    <div class="field-row"><div class="field"><label>ទឹកប្រាក់ ($)</label><input class="text-input numeric-input" inputmode="decimal" id="expenseAmount" required></div><div class="field"><label>វិធីទូទាត់</label><select id="expensePaymentMethod"><option value="cash">សាច់ប្រាក់</option><option value="khqr">KHQR</option><option value="aba">ABA</option><option value="acleda">ACLEDA</option><option value="card">កាត</option><option value="other">ផ្សេងៗ</option></select></div></div>
+    <div class="modal-actions"><button type="button" class="btn btn-ghost" id="expenseCancel">បោះបង់</button><button type="submit" class="btn btn-brand">រក្សាទុកចំណាយ</button></div>
+  </form>
+</div></div>
+
+<div class="modal-overlay" id="debtPaymentModalOverlay"><div class="modal">
+  <div class="modal-head"><div class="modal-title">ទទួលប្រាក់បំណុលអតិថិជន</div><button type="button" class="modal-x" id="debtPaymentModalClose">✕</button></div>
+  <form id="debtPaymentForm">
+    <div class="field"><label>អតិថិជនដែលមានបំណុល</label><select id="debtCustomer" required></select></div>
+    <div class="field-row"><div class="field"><label>ទឹកប្រាក់បានទទួល ($)</label><input class="text-input numeric-input" inputmode="decimal" id="debtAmount" required></div><div class="field"><label>កាលបរិច្ឆេទ</label><input class="text-input" type="date" id="debtDate" required></div></div>
+    <div class="field"><label>វិធីទូទាត់</label><select id="debtPaymentMethod"><option value="cash">សាច់ប្រាក់</option><option value="khqr">KHQR</option><option value="aba">ABA</option><option value="acleda">ACLEDA</option><option value="card">កាត</option><option value="other">ផ្សេងៗ</option></select></div>
+    <div class="modal-actions"><button type="button" class="btn btn-ghost" id="debtPaymentCancel">បោះបង់</button><button type="submit" class="btn btn-brand">រក្សាទុកការទូទាត់</button></div>
+  </form>
+</div></div>
 
 <div class="modal-overlay" id="scanStockModalOverlay">
   <div class="modal">
@@ -1162,6 +1246,9 @@
 
 
   var transactions = [];
+  var purchases = [];
+  var expenses = [];
+  var debtPayments = [];
   var invoiceSeq = 1;
 
   function minsAgo(m){ return new Date(Date.now() - m*60000); }
@@ -1180,9 +1267,10 @@
   function saveData(){
     if(!dataReady || storageBlocked) return;
     try{
-      localStorage.setItem("shop_data_v1", JSON.stringify({version:2, products:products,
+      localStorage.setItem("shop_data_v1", JSON.stringify({version:3, products:products,
         suppliers:suppliers, manualCustomers:manualCustomers, cart:cart,
         stockMovements:stockMovements, transactions:transactions, invoiceSeq:invoiceSeq,
+        purchases:purchases, expenses:expenses, debtPayments:debtPayments,
         revenueHistory:revenueHistory, ordersHistory:ordersHistory, historyDate:historyDate}));
       storageWarning = false;
     }catch(e){
@@ -1197,15 +1285,20 @@
       var d = JSON.parse(raw);
       // One-time owner-requested reset of the previous dataset. New records survive reloads.
       if(d.version === 1) return;
-      var arrays = ["products","suppliers","manualCustomers","cart","stockMovements","transactions","revenueHistory","ordersHistory"];
-      if(d.version !== 2 || !arrays.every(function(k){ return Array.isArray(d[k]); }) ||
+      if(d.version === 2){
+        d.products.forEach(function(p){ if(!Number.isFinite(p.costPrice)) p.costPrice = 0; });
+        d.transactions.forEach(function(t){ t.cost=0; t.paidAmount=t.status==="paid"?t.amount:0; t.paymentMethod="cash"; });
+        d.purchases=[]; d.expenses=[]; d.debtPayments=[]; d.version=3;
+      }
+      var arrays = ["products","suppliers","manualCustomers","cart","stockMovements","transactions","purchases","expenses","debtPayments","revenueHistory","ordersHistory"];
+      if(d.version !== 3 || !arrays.every(function(k){ return Array.isArray(d[k]); }) ||
          !Number.isSafeInteger(d.invoiceSeq) || d.invoiceSeq < 1 ||
          d.revenueHistory.length !== 30 || d.ordersHistory.length !== 30) throw Error("Invalid data");
       function nonnegative(n){ return Number.isFinite(n) && n >= 0; }
       function count(n){ return nonnegative(n) && Number.isSafeInteger(n); }
       function strings(obj, keys){ return obj && keys.every(function(k){ return typeof obj[k] === "string"; }); }
       if(!d.products.every(function(p){ return strings(p,["id","name","cat","barcode"]) &&
-        count(p.stock) && count(p.reorder) && count(p.sold30) && nonnegative(p.price) &&
+        count(p.stock) && count(p.reorder) && count(p.sold30) && nonnegative(p.price) && nonnegative(p.costPrice) &&
         count(p.promoPercent) && p.promoPercent <= 90 && (p.expiry === null || /^\d{4}-\d{2}-\d{2}$/.test(p.expiry)); }) ||
         new Set(d.products.map(function(p){ return p.id; })).size !== d.products.length ||
         !d.suppliers.every(function(p){ return strings(p,["id","name","contact","phone","category"]); }) ||
@@ -1214,15 +1307,32 @@
         !d.revenueHistory.every(nonnegative) || !d.ordersHistory.every(count)) throw Error("Invalid data");
       d.transactions.forEach(function(t){
         if(!strings(t,["inv","customer","items"]) || !nonnegative(t.amount) || ["paid","pending"].indexOf(t.status) < 0) throw Error("Invalid sale");
+        if(!nonnegative(t.cost)) t.cost=0;
+        if(!nonnegative(t.paidAmount)) t.paidAmount=t.status==="paid"?t.amount:0;
+        t.paidAmount=Math.min(t.amount,t.paidAmount);
+        if(typeof t.paymentMethod!=="string") t.paymentMethod="cash";
         t.time = new Date(t.time); if(!Number.isFinite(t.time.getTime())) throw Error("Invalid date");
       });
       d.stockMovements.forEach(function(m){
         if(!strings(m,["pid","pname","reason"]) || !count(m.qty) || ["in","out"].indexOf(m.type) < 0) throw Error("Invalid movement");
         m.time = new Date(m.time); if(!Number.isFinite(m.time.getTime())) throw Error("Invalid date");
       });
+      d.purchases.forEach(function(p){
+        if(!strings(p,["id","date","pid","pname","supplierId","supplierName"])||!count(p.qty)||p.qty<1||![p.unitCost,p.total,p.paid,p.due].every(nonnegative))throw Error("Invalid purchase");
+        p.time=new Date(p.time); if(!Number.isFinite(p.time.getTime())) p.time=new Date((p.date||historyDate)+"T00:00:00");
+      });
+      d.expenses.forEach(function(x){
+        if(!strings(x,["id","date","category","description","paymentMethod"])||!nonnegative(x.amount))throw Error("Invalid expense");
+        x.time=new Date(x.time); if(!Number.isFinite(x.time.getTime())) x.time=new Date((x.date||historyDate)+"T00:00:00");
+      });
+      d.debtPayments.forEach(function(x){
+        if(!strings(x,["id","date","customer","paymentMethod"])||!nonnegative(x.amount))throw Error("Invalid debt payment");
+        x.time=new Date(x.time); if(!Number.isFinite(x.time.getTime())) x.time=new Date((x.date||historyDate)+"T00:00:00");
+      });
       products=d.products; suppliers=d.suppliers; manualCustomers=d.manualCustomers;
       cart=d.cart.filter(function(c){ return products.some(function(p){ return p.id === c.pid; }); });
       transactions=d.transactions; stockMovements=d.stockMovements; invoiceSeq=d.invoiceSeq;
+      purchases=d.purchases; expenses=d.expenses; debtPayments=d.debtPayments;
       revenueHistory=d.revenueHistory; ordersHistory=d.ordersHistory;
       var elapsed = Math.max(0, Math.min(30, Math.round((new Date(historyDate)-new Date(d.historyDate))/86400000)));
       for(var day=0; day<elapsed; day++){ revenueHistory.shift(); revenueHistory.push(0); ordersHistory.shift(); ordersHistory.push(0); }
@@ -1297,10 +1407,10 @@
   function closeSidebar(){ sidebar.classList.remove("open"); scrim.classList.remove("open"); }
 
   /* ================= Page router ================= */
-  var PAGES = ["dashboard","inventory","catalog","pos","customers","suppliers","reports","settings"];
+  var PAGES = ["dashboard","inventory","catalog","pos","customers","suppliers","purchases","finance","reports","settings"];
   var PAGE_TITLES = {
     dashboard:"ផ្ទាំងគ្រប់គ្រង", inventory:"ស្តុកទំនិញ", catalog:"កាតាឡុកទំនិញ", pos:"ការលក់",
-    customers:"អតិថិជន", suppliers:"អ្នកផ្គត់ផ្គង់", reports:"របាយការណ៍", settings:"ការកំណត់"
+    customers:"អតិថិជន", suppliers:"អ្នកផ្គត់ផ្គង់", purchases:"ការទិញចូល", finance:"ហិរញ្ញវត្ថុ", reports:"របាយការណ៍", settings:"ការកំណត់"
   };
   var currentPage = "dashboard";
 
@@ -1321,6 +1431,8 @@
     else if(page === "pos"){ renderPosGrid(); renderCart(); focusBarcode(); }
     else if(page === "customers") renderCustomers();
     else if(page === "suppliers") renderSuppliers();
+    else if(page === "purchases") renderPurchases();
+    else if(page === "finance") renderFinance();
     else if(page === "reports") renderReportsPage();
     else if(page === "settings") renderSettingsPage();
 
@@ -1339,15 +1451,21 @@
 
   function computeKpis(days){
     var hist = revenueHistory.slice(-days);
-    var ord = ordersHistory.slice(-days);
-    var prevHist = revenueHistory.slice(-days*2, -days);
-    var prevOrd = ordersHistory.slice(-days*2, -days);
-    var revenue = hist.reduce(function(a,b){return a+b;},0);
-    var prevRevenue = prevHist.length ? prevHist.reduce(function(a,b){return a+b;},0) : revenue;
-    var orders = ord.reduce(function(a,b){return a+b;},0);
-    var prevOrders = prevOrd.length ? prevOrd.reduce(function(a,b){return a+b;},0) : orders;
-    var profit = revenue * 0.34;
-    var prevProfit = prevRevenue * 0.34;
+    var now=Date.now(), start=now-days*86400000, prevStart=now-days*2*86400000;
+    function inRange(t,a,b){ var ms=new Date(t.time).getTime(); return ms>=a && ms<b; }
+    var curTx=transactions.filter(function(t){return inRange(t,start,now+1);});
+    var prevTx=transactions.filter(function(t){return inRange(t,prevStart,start);});
+    var curExp=expenses.filter(function(x){return inRange(x,start,now+1);});
+    var prevExp=expenses.filter(function(x){return inRange(x,prevStart,start);});
+    var revenue=curTx.reduce(function(s,t){return s+t.amount;},0);
+    var prevRevenue=prevTx.reduce(function(s,t){return s+t.amount;},0);
+    var orders=curTx.length, prevOrders=prevTx.length;
+    var cogs=curTx.reduce(function(s,t){return s+(t.cost||0);},0);
+    var prevCogs=prevTx.reduce(function(s,t){return s+(t.cost||0);},0);
+    var expenseTotal=curExp.reduce(function(s,x){return s+x.amount;},0);
+    var prevExpense=prevExp.reduce(function(s,x){return s+x.amount;},0);
+    var profit=revenue-cogs-expenseTotal;
+    var prevProfit=prevRevenue-prevCogs-prevExpense;
     var lowStock = products.filter(function(p){ return p.stock <= p.reorder; }).length;
     return {revenue:revenue, prevRevenue:prevRevenue, orders:orders, prevOrders:prevOrders,
              profit:profit, prevProfit:prevProfit, lowStock:lowStock, hist:hist};
@@ -1404,7 +1522,7 @@
     var html = '';
     html += kpiTile("ចំណូលសរុប", fmtMoney(k.revenue), k.revenue, k.prevRevenue, ICONS.revenue, "var(--brand-wash)", "var(--brand-dark)", k.hist);
     html += kpiTile("ចំនួនការលក់", k.orders.toLocaleString(), k.orders, k.prevOrders, ICONS.orders, "var(--blue-wash)", "var(--blue)", ordersHistory.slice(-days));
-    html += kpiTile("ប្រាក់ចំណេញប៉ាន់ស្មាន", fmtMoney(k.profit), k.profit, k.prevProfit, ICONS.profit, "var(--good-wash)", "var(--good-text)", null);
+    html += kpiTile("ប្រាក់ចំណេញសុទ្ធ", fmtMoney(k.profit), k.profit, k.prevProfit, ICONS.profit, "var(--good-wash)", "var(--good-text)", null);
     html += '<div class="card kpi">' +
         '<div class="kpi-top"><div class="kpi-label">ទំនិញជិតអស់ស្តុក</div>' +
         '<div class="kpi-icon" style="background:var(--critical-wash);color:var(--critical)">' + ICONS.stock + '</div></div>' +
@@ -1685,13 +1803,14 @@
   function getCustomerStats(){
     var map = Object.create(null);
     transactions.forEach(function(t){
-      if(!map[t.customer]) map[t.customer] = {name:t.customer, phone:null, orders:0, spent:0, last:t.time};
+      if(!map[t.customer]) map[t.customer] = {name:t.customer, phone:null, orders:0, spent:0, debt:0, last:t.time};
       map[t.customer].orders++;
       map[t.customer].spent += t.amount;
+      map[t.customer].debt += Math.max(0,t.amount-(t.paidAmount||0));
       if(t.time > map[t.customer].last) map[t.customer].last = t.time;
     });
     manualCustomers.forEach(function(c){
-      if(!map[c.name]) map[c.name] = {name:c.name, phone:c.phone, orders:0, spent:0, last:null};
+      if(!map[c.name]) map[c.name] = {name:c.name, phone:c.phone, orders:0, spent:0, debt:0, last:null};
       else map[c.name].phone = c.phone;
     });
     return Object.keys(map).map(function(k){ return map[k]; }).sort(function(a,b){ return b.spent-a.spent; });
@@ -1765,6 +1884,7 @@
           '<span style="min-width:26px;text-align:center;display:inline-block;">'+p.stock+'</span>' +
           '<button type="button" class="stock-inc" data-pid="'+escapeHtml(p.id)+'">+</button>' +
         '</span></td>' +
+        '<td class="tab">'+fmtMoney(p.costPrice||0)+'</td>' +
         '<td class="tab">'+priceHtml+'</td>' +
         '<td class="tab">'+p.sold30+'</td>' +
         '<td><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start;">'+chips.join("")+'</div></td>' +
@@ -1773,7 +1893,7 @@
           '<button type="button" class="icon-sm-btn danger del-product" data-pid="'+escapeHtml(p.id)+'" title="លុប"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg></button>' +
         '</div></td>' +
       '</tr>';
-    }).join("") || '<tr class="empty-row"><td colspan="7">រកមិនឃើញទំនិញទេ</td></tr>';
+    }).join("") || '<tr class="empty-row"><td colspan="8">រកមិនឃើញទំនិញទេ</td></tr>';
 
     document.querySelectorAll('#page-inventory thead th[data-isort]').forEach(function(th){
       var arrow = th.querySelector(".arrow");
@@ -1858,6 +1978,7 @@
       document.getElementById("pfSupplier").value = p.supplier || "";
       document.getElementById("pfStock").value = p.stock;
       document.getElementById("pfReorder").value = p.reorder;
+      document.getElementById("pfCost").value = p.costPrice || 0;
       document.getElementById("pfPrice").value = p.price;
       document.getElementById("pfBarcode").value = p.barcode || "";
       document.getElementById("pfExpiry").value = p.expiry || "";
@@ -1878,23 +1999,24 @@
     var supplier = document.getElementById("pfSupplier").value;
     var stock = readNumber("pfStock", 0, Number.MAX_SAFE_INTEGER, true);
     var reorder = readNumber("pfReorder", 0, Number.MAX_SAFE_INTEGER, true);
+    var costPrice = readNumber("pfCost", 0, 1000000000, false);
     var price = readNumber("pfPrice", 0, 1000000000, false);
     var barcode = toAsciiDigits(document.getElementById("pfBarcode").value.trim()) || genBarcode();
     var expiry = document.getElementById("pfExpiry").value || null;
     var promoPercent = readNumber("pfPromo", 0, 90, true, 0);
-    if(!name || !cat || [stock, reorder, price, promoPercent].some(function(v){ return v === null; })) return;
+    if(!name || !cat || [stock, reorder, costPrice, price, promoPercent].some(function(v){ return v === null; })) return;
     if(products.some(function(p){ return p.id !== editingProductId && p.barcode === barcode; })){
       toast("បាកូដនេះមានរួចហើយ សូមប្រើបាកូដផ្សេង"); return;
     }
     if(editingProductId){
       var p = products.find(function(x){ return x.id === editingProductId; });
       var stockDiff = stock - p.stock;
-      p.name = name; p.cat = cat; p.supplier = supplier; p.stock = stock; p.reorder = reorder; p.price = price;
+      p.name = name; p.cat = cat; p.supplier = supplier; p.stock = stock; p.reorder = reorder; p.costPrice=costPrice; p.price = price;
       p.barcode = barcode; p.expiry = expiry; p.promoPercent = promoPercent;
       if(stockDiff !== 0) logMovement(p, stockDiff > 0 ? "in" : "out", Math.abs(stockDiff), "កែសម្រួលស្តុក");
       toast("បានកែសម្រួលទំនិញ « " + name + " »");
     } else {
-      var newP = {id:"p"+Date.now(), name:name, cat:cat, supplier:supplier, stock:stock, reorder:reorder, price:price, sold30:0, barcode:barcode, expiry:expiry, promoPercent:promoPercent};
+      var newP = {id:"p"+Date.now(), name:name, cat:cat, supplier:supplier, stock:stock, reorder:reorder, costPrice:costPrice, price:price, sold30:0, barcode:barcode, expiry:expiry, promoPercent:promoPercent};
       products.push(newP);
       if(stock > 0) logMovement(newP, "in", stock, "ស្តុកដើម (ទំនិញថ្មី)");
       toast("បានបន្ថែមទំនិញ « " + name + " »");
@@ -2121,7 +2243,7 @@
     logMovement(p, "out", qty, "លក់ក្នុងហាង");
     transactions.unshift({
       inv:"INV-"+(invoiceSeq++), customer:"អតិថិជនក្នុងហាង", items:p.name+" ×"+qty,
-      amount:amount, status:"paid", time:new Date()
+      amount:amount, cost:(p.costPrice||0)*qty, paidAmount:amount, paymentMethod:"cash", status:"paid", time:new Date()
     });
     revenueHistory[revenueHistory.length-1] += amount;
     ordersHistory[ordersHistory.length-1] += 1;
@@ -2263,21 +2385,23 @@
   function checkoutCart(){
     if(!cart.length){ toast("សូមបន្ថែមទំនិញទៅកន្ត្រកជាមុនសិន"); return; }
     if(!cart.every(function(c){ return validSale(products.find(function(p){ return p.id === c.pid; }), c.qty); })) return;
-    var itemsDesc = [], amount = 0;
+    var itemsDesc = [], amount = 0, cost = 0;
     cart.forEach(function(c){
       var p = products.find(function(x){ return x.id === c.pid; });
       if(!p) return;
       itemsDesc.push(p.name + " ×" + c.qty);
       amount += effPrice(p) * c.qty;
+      cost += (p.costPrice||0) * c.qty;
       p.stock = Math.max(0, p.stock - c.qty);
       p.sold30 += c.qty;
       logMovement(p, "out", c.qty, "ការលក់ POS");
     });
     var customerName = document.getElementById("posCustomer").value.trim() || "អតិថិជនទូទៅ";
     var status = document.getElementById("posStatus").value;
+    var paymentMethod = document.getElementById("posPaymentMethod").value;
     transactions.unshift({
       inv:"INV-"+(invoiceSeq++), customer:customerName, items:itemsDesc.join(", "),
-      amount:amount, status:status, time:new Date()
+      amount:amount, cost:cost, paidAmount:status==="paid"?amount:0, paymentMethod:paymentMethod, status:status, time:new Date()
     });
     revenueHistory[revenueHistory.length-1] += amount;
     ordersHistory[ordersHistory.length-1] += 1;
@@ -2393,7 +2517,7 @@
     try{
       if(storageBlocked)throw Error("ការរក្សាទុកត្រូវបានរារាំង");
       var saved=JSON.parse(localStorage.getItem("shop_data_v1")||"null");
-      if(!saved || saved.version!==2)throw Error("មិនអាចរក្សាទុកបាន");
+      if(!saved || saved.version!==3)throw Error("មិនអាចរក្សាទុកបាន");
       manualCustomers=manualCustomers.concat(result.added);
       saved.manualCustomers=manualCustomers;
       localStorage.setItem("shop_data_v1",JSON.stringify(saved));
@@ -2411,9 +2535,10 @@
         '<td style="color:var(--ink-muted);">'+escapeHtml(c.phone || "—")+'</td>' +
         '<td class="tab">'+c.orders+'</td>' +
         '<td class="tab">'+fmtMoney(c.spent)+'</td>' +
+        '<td class="tab" style="color:'+(c.debt>0?'var(--critical)':'var(--ink-muted)')+';font-weight:600;">'+fmtMoney(c.debt)+'</td>' +
         '<td class="tab" style="color:var(--ink-muted);">'+(c.last ? fmtTime(c.last) : "—")+'</td>' +
       '</tr>';
-    }).join("") || '<tr class="empty-row"><td colspan="5">រកមិនឃើញអតិថិជនទេ</td></tr>';
+    }).join("") || '<tr class="empty-row"><td colspan="6">រកមិនឃើញអតិថិជនទេ</td></tr>';
     refreshCustomerDatalist();
   }
   document.getElementById("custSearch").addEventListener("input", function(e){ custSearchTerm = e.target.value; renderCustomers(); });
@@ -2441,14 +2566,16 @@
   function renderSuppliers(){
     document.getElementById("suppBody").innerHTML = suppliers.map(function(s){
       var count = products.filter(function(p){ return p.supplier === s.id; }).length;
+      var due = purchases.filter(function(p){return p.supplierId===s.id;}).reduce(function(sum,p){return sum+p.due;},0);
       return '<tr>' +
         '<td class="cust-cell">'+escapeHtml(s.name)+'</td>' +
         '<td>'+escapeHtml(s.contact||"—")+'</td>' +
         '<td style="color:var(--ink-muted);">'+escapeHtml(s.phone||"—")+'</td>' +
         '<td>'+escapeHtml(s.category||"—")+'</td>' +
         '<td class="tab">'+count+'</td>' +
+        '<td class="tab" style="color:'+(due>0?'var(--critical)':'var(--ink-muted)')+';font-weight:600;">'+fmtMoney(due)+'</td>' +
       '</tr>';
-    }).join("") || '<tr class="empty-row"><td colspan="5">មិនទាន់មានអ្នកផ្គត់ផ្គង់ទេ</td></tr>';
+    }).join("") || '<tr class="empty-row"><td colspan="6">មិនទាន់មានអ្នកផ្គត់ផ្គង់ទេ</td></tr>';
   }
 
   var supplierModalOverlay = document.getElementById("supplierModalOverlay");
@@ -2474,21 +2601,89 @@
     toast("បានបន្ថែមអ្នកផ្គត់ផ្គង់ « " + name + " »");
   });
 
+  /* ================= Purchases, expenses and customer debt ================= */
+  function todayInput(){ return new Date().toLocaleDateString("en-CA"); }
+  function paymentLabel(v){ return ({cash:"សាច់ប្រាក់",khqr:"KHQR",aba:"ABA",acleda:"ACLEDA",card:"កាត",other:"ផ្សេងៗ"})[v]||v||"—"; }
+  function totalCustomerDebt(){ return transactions.reduce(function(s,t){return s+Math.max(0,t.amount-(t.paidAmount||0));},0); }
+  function totalSupplierDebt(){ return purchases.reduce(function(s,p){return s+(p.due||0);},0); }
+  function totalExpenses(){ return expenses.reduce(function(s,x){return s+x.amount;},0); }
+  function totalCogs(){ return transactions.reduce(function(s,t){return s+(t.cost||0);},0); }
+
+  function populatePurchaseOptions(){
+    var psel=document.getElementById("purchaseProduct"), ssel=document.getElementById("purchaseSupplier");
+    var pcur=psel.value, scur=ssel.value;
+    psel.innerHTML=products.map(function(p){return '<option value="'+escapeHtml(p.id)+'">'+escapeHtml(p.name)+'</option>';}).join("");
+    ssel.innerHTML='<option value="">មិនបានកំណត់</option>'+suppliers.map(function(s){return '<option value="'+escapeHtml(s.id)+'">'+escapeHtml(s.name)+'</option>';}).join("");
+    if(products.some(function(p){return p.id===pcur;}))psel.value=pcur;
+    if(suppliers.some(function(s){return s.id===scur;}))ssel.value=scur;
+    var selected=products.find(function(p){return p.id===psel.value;});
+    if(selected && !document.getElementById("purchaseUnitCost").value)document.getElementById("purchaseUnitCost").value=selected.costPrice||0;
+  }
+  function updatePurchasePreview(){
+    var q=Number(toAsciiDigits(document.getElementById("purchaseQty").value)), c=Number(toAsciiDigits(document.getElementById("purchaseUnitCost").value));
+    document.getElementById("purchasePreview").textContent=Number.isFinite(q)&&Number.isFinite(c)?fmtMoney(q*c):"—";
+  }
+  function renderPurchases(){
+    var total=purchases.reduce(function(s,p){return s+p.total;},0), due=totalSupplierDebt();
+    document.getElementById("purchaseSummary").textContent=purchases.length+" លើក · សរុប "+fmtMoney(total)+" · នៅជំពាក់ "+fmtMoney(due);
+    document.getElementById("purchaseBody").innerHTML=purchases.map(function(p){return '<tr><td>'+fmtDate(p.date)+'</td><td class="cust-cell">'+escapeHtml(p.pname)+'</td><td>'+escapeHtml(p.supplierName||"—")+'</td><td class="tab">'+p.qty+'</td><td class="tab">'+fmtMoney(p.unitCost)+'</td><td class="tab">'+fmtMoney(p.total)+'</td><td class="tab">'+fmtMoney(p.paid)+'</td><td class="tab" style="color:'+(p.due>0?'var(--critical)':'var(--ink-muted)')+';font-weight:600;">'+fmtMoney(p.due)+'</td></tr>';}).join("")||'<tr class="empty-row"><td colspan="8">មិនទាន់មានការទិញចូលទេ</td></tr>';
+  }
+  var purchaseModalOverlay=document.getElementById("purchaseModalOverlay");
+  document.getElementById("addPurchaseBtn").addEventListener("click",function(){
+    if(!products.length){toast("សូមបន្ថែមទំនិញជាមុនសិន");return;}
+    document.getElementById("purchaseForm").reset();document.getElementById("purchaseQty").value="1";document.getElementById("purchasePaid").value="0";document.getElementById("purchaseDate").value=todayInput();
+    populatePurchaseOptions();updatePurchasePreview();purchaseModalOverlay.classList.add("open");
+  });
+  function closePurchase(){purchaseModalOverlay.classList.remove("open");}
+  document.getElementById("purchaseModalClose").addEventListener("click",closePurchase);document.getElementById("purchaseCancel").addEventListener("click",closePurchase);purchaseModalOverlay.addEventListener("click",function(e){if(e.target===purchaseModalOverlay)closePurchase();});
+  document.getElementById("purchaseProduct").addEventListener("change",function(){var id=this.value,p=products.find(function(x){return x.id===id;});if(p)document.getElementById("purchaseUnitCost").value=p.costPrice||0;updatePurchasePreview();});
+  document.getElementById("purchaseQty").addEventListener("input",updatePurchasePreview);document.getElementById("purchaseUnitCost").addEventListener("input",updatePurchasePreview);
+  document.getElementById("purchaseForm").addEventListener("submit",function(e){
+    e.preventDefault();var p=products.find(function(x){return x.id===document.getElementById("purchaseProduct").value;});
+    var qty=readNumber("purchaseQty",1,Number.MAX_SAFE_INTEGER,true), unitCost=readNumber("purchaseUnitCost",0,1000000000,false), paid=readNumber("purchasePaid",0,1000000000,false);if(!p||qty===null||unitCost===null||paid===null)return;
+    var total=qty*unitCost;if(paid>total){toast("ចំនួនបានបង់មិនអាចលើសទឹកប្រាក់សរុបបានទេ");return;}
+    var sid=document.getElementById("purchaseSupplier").value, s=suppliers.find(function(x){return x.id===sid;});
+    var oldStock=p.stock, oldCost=p.costPrice||0;p.costPrice=oldStock+qty?(oldStock*oldCost+qty*unitCost)/(oldStock+qty):unitCost;p.stock+=qty;if(sid)p.supplier=sid;
+    var date=document.getElementById("purchaseDate").value;purchases.unshift({id:"PUR-"+Date.now(),date:date,pid:p.id,pname:p.name,supplierId:sid,supplierName:s?s.name:"",qty:qty,unitCost:unitCost,total:total,paid:paid,due:total-paid,time:new Date(date+"T00:00:00")});
+    logMovement(p,"in",qty,"ការទិញចូល");closePurchase();renderAll();toast("បានទិញចូល « "+p.name+" » ×"+qty);
+  });
+
+  function renderFinance(){
+    var revenue=transactions.reduce(function(s,t){return s+t.amount;},0), cogs=totalCogs(), exp=totalExpenses(), profit=revenue-cogs-exp;
+    document.getElementById("financeStats").innerHTML=statMini("ចំណូលលក់",fmtMoney(revenue))+statMini("ថ្លៃដើមទំនិញ",fmtMoney(cogs))+statMini("ចំណាយហាង",fmtMoney(exp))+statMini("ចំណេញសុទ្ធ",fmtMoney(profit))+statMini("បំណុលអតិថិជន",fmtMoney(totalCustomerDebt()))+statMini("ជំពាក់អ្នកផ្គត់ផ្គង់",fmtMoney(totalSupplierDebt()));
+    document.getElementById("expenseBody").innerHTML=expenses.map(function(x){return '<tr><td>'+fmtDate(x.date)+'</td><td>'+escapeHtml(x.category)+'</td><td>'+escapeHtml(x.description)+'</td><td class="tab">'+fmtMoney(x.amount)+'</td><td>'+escapeHtml(paymentLabel(x.paymentMethod))+'</td></tr>';}).join("")||'<tr class="empty-row"><td colspan="5">មិនទាន់មានចំណាយទេ</td></tr>';
+    document.getElementById("debtPaymentBody").innerHTML=debtPayments.map(function(x){return '<tr><td>'+fmtDate(x.date)+'</td><td class="cust-cell">'+escapeHtml(x.customer)+'</td><td class="tab">'+fmtMoney(x.amount)+'</td><td>'+escapeHtml(paymentLabel(x.paymentMethod))+'</td></tr>';}).join("")||'<tr class="empty-row"><td colspan="4">មិនទាន់មានការទទួលបំណុលទេ</td></tr>';
+  }
+  var expenseModalOverlay=document.getElementById("expenseModalOverlay");
+  document.getElementById("addExpenseBtn").addEventListener("click",function(){document.getElementById("expenseForm").reset();document.getElementById("expenseDate").value=todayInput();expenseModalOverlay.classList.add("open");});
+  function closeExpense(){expenseModalOverlay.classList.remove("open");}document.getElementById("expenseModalClose").addEventListener("click",closeExpense);document.getElementById("expenseCancel").addEventListener("click",closeExpense);expenseModalOverlay.addEventListener("click",function(e){if(e.target===expenseModalOverlay)closeExpense();});
+  document.getElementById("expenseForm").addEventListener("submit",function(e){e.preventDefault();var amount=readNumber("expenseAmount",0.01,1000000000,false);if(amount===null)return;var date=document.getElementById("expenseDate").value;expenses.unshift({id:"EXP-"+Date.now(),date:date,category:document.getElementById("expenseCategory").value,description:document.getElementById("expenseDescription").value.trim(),amount:amount,paymentMethod:document.getElementById("expensePaymentMethod").value,time:new Date(date+"T00:00:00")});closeExpense();renderAll();toast("បានកត់ត្រាចំណាយ "+fmtMoney(amount));});
+
+  var debtPaymentModalOverlay=document.getElementById("debtPaymentModalOverlay");
+  function populateDebtCustomers(){var list=getCustomerStats().filter(function(c){return c.debt>0.000001;});document.getElementById("debtCustomer").innerHTML=list.map(function(c){return '<option value="'+escapeHtml(c.name)+'">'+escapeHtml(c.name)+' — '+fmtMoney(c.debt)+'</option>';}).join("");return list;}
+  document.getElementById("addDebtPaymentBtn").addEventListener("click",function(){var list=populateDebtCustomers();if(!list.length){toast("មិនមានអតិថិជនជំពាក់ប្រាក់ទេ");return;}document.getElementById("debtPaymentForm").reset();populateDebtCustomers();document.getElementById("debtDate").value=todayInput();debtPaymentModalOverlay.classList.add("open");});
+  function closeDebtPayment(){debtPaymentModalOverlay.classList.remove("open");}document.getElementById("debtPaymentModalClose").addEventListener("click",closeDebtPayment);document.getElementById("debtPaymentCancel").addEventListener("click",closeDebtPayment);debtPaymentModalOverlay.addEventListener("click",function(e){if(e.target===debtPaymentModalOverlay)closeDebtPayment();});
+  document.getElementById("debtPaymentForm").addEventListener("submit",function(e){
+    e.preventDefault();var customer=document.getElementById("debtCustomer").value, amount=readNumber("debtAmount",0.01,1000000000,false), stat=getCustomerStats().find(function(c){return c.name===customer;});if(amount===null||!stat)return;if(amount>stat.debt+0.000001){toast("ទឹកប្រាក់លើសបំណុលនៅសល់ "+fmtMoney(stat.debt));return;}
+    var left=amount;transactions.filter(function(t){return t.customer===customer&&t.amount-(t.paidAmount||0)>0;}).sort(function(a,b){return a.time-b.time;}).forEach(function(t){if(left<=0)return;var due=t.amount-(t.paidAmount||0), applied=Math.min(left,due);t.paidAmount=(t.paidAmount||0)+applied;left-=applied;if(t.paidAmount>=t.amount-0.000001)t.status="paid";});
+    var date=document.getElementById("debtDate").value;debtPayments.unshift({id:"PAY-"+Date.now(),date:date,customer:customer,amount:amount,paymentMethod:document.getElementById("debtPaymentMethod").value,time:new Date(date+"T00:00:00")});closeDebtPayment();renderAll();toast("បានទទួលប្រាក់ពី « "+customer+" » "+fmtMoney(amount));
+  });
+
   /* ================= Reports page ================= */
   function statMini(label, val){
     return '<div class="card stat-mini"><div class="lbl">'+label+'</div><div class="val tab">'+val+'</div></div>';
   }
   function renderReportsPage(){
     var allRevenue = transactions.reduce(function(s,t){ return s+t.amount; }, 0);
-    var paidRevenue = transactions.filter(function(t){ return t.status==="paid"; }).reduce(function(s,t){ return s+t.amount; }, 0);
-    var pendingRevenue = allRevenue - paidRevenue;
-    var avgOrder = transactions.length ? allRevenue/transactions.length : 0;
+    var paidRevenue = transactions.reduce(function(s,t){return s+(t.paidAmount||0);},0);
+    var pendingRevenue = totalCustomerDebt();
+    var cogs=totalCogs(), exp=totalExpenses(), netProfit=allRevenue-cogs-exp;
 
     document.getElementById("reportStats").innerHTML =
       statMini("ចំណូលសរុបទាំងអស់", fmtMoney(allRevenue)) +
-      statMini("ចំនួនប្រតិបត្តិការ", transactions.length.toLocaleString()) +
-      statMini("តម្លៃមធ្យមក្នុងមួយកម្មង់", fmtMoney(avgOrder)) +
-      statMini("អតិថិជនសរុប", getCustomerStats().length.toLocaleString());
+      statMini("ថ្លៃដើមទំនិញលក់", fmtMoney(cogs)) +
+      statMini("ចំណាយហាង", fmtMoney(exp)) +
+      statMini("ចំណេញសុទ្ធ", fmtMoney(netProfit));
 
     var catMap = Object.create(null);
     products.forEach(function(p){ catMap[p.cat] = (catMap[p.cat]||0) + p.price*p.sold30; });
@@ -2554,6 +2749,14 @@
     setStoredSettings();
     renderStockList();
   });
+  document.getElementById("exportBackupBtn").addEventListener("click",function(){
+    saveData();var raw=localStorage.getItem("shop_data_v1");if(!raw){toast("មិនមានទិន្នន័យសម្រាប់បម្រុងទុកទេ");return;}
+    var blob=new Blob([raw],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="shop-backup-"+todayInput()+".json";a.click();setTimeout(function(){URL.revokeObjectURL(url);},1000);
+  });
+  document.getElementById("importBackupFile").addEventListener("change",function(){
+    var file=this.files&&this.files[0];if(!file)return;if(file.size>10*1024*1024){toast("ឯកសារបម្រុងធំពេក (អតិបរមា 10 MB)");this.value="";return;}
+    var input=this;file.text().then(function(raw){var d=JSON.parse(raw),required=["products","suppliers","manualCustomers","transactions","stockMovements","revenueHistory","ordersHistory"];if([2,3].indexOf(d.version)<0||!required.every(function(k){return Array.isArray(d[k]);}))throw Error("invalid");if(!window.confirm("ស្ដារឯកសារនេះ ហើយជំនួសទិន្នន័យបច្ចុប្បន្នទាំងអស់មែនទេ?"))return;localStorage.setItem("shop_data_v1",raw);window.location.reload();}).catch(function(){toast("ឯកសារបម្រុងមិនត្រឹមត្រូវទេ");}).finally(function(){input.value="";});
+  });
 
   /* ================= Central re-render (keeps every page in sync) ================= */
   function renderAll(){
@@ -2570,8 +2773,11 @@
     renderCart();
     renderCustomers();
     renderSuppliers();
+    renderPurchases();
+    renderFinance();
     renderReportsPage();
     populateSupplierSelect();
+    populatePurchaseOptions();
     if(typeof populateSaleProductSelect === "function") populateSaleProductSelect();
   }
 
@@ -2617,12 +2823,16 @@
     var amount = effPrice(p) * qty;
     var customerName = document.getElementById("saleCustomer").value.trim() || "អតិថិជនទូទៅ";
     var status = document.getElementById("saleStatus").value;
+    var paymentMethod = document.getElementById("salePaymentMethod").value;
 
     transactions.unshift({
       inv: "INV-" + (invoiceSeq++),
       customer: customerName,
       items: p.name + " ×" + qty,
       amount: amount,
+      cost: (p.costPrice||0)*qty,
+      paidAmount: status==="paid"?amount:0,
+      paymentMethod: paymentMethod,
       status: status,
       time: new Date()
     });

@@ -5,7 +5,7 @@ const html = fs.readFileSync(require('node:path').join(__dirname, '../index.html
 let source = html.match(/<script>([\s\S]*?)<\/script>/)[1];
 new vm.Script(source);
 source = source.replace(/\}\)\(\);\s*$/, `globalThis.app = {
-  state:()=>({products,transactions,cart,stockMovements,suppliers,manualCustomers,invoiceSeq}),
+  state:()=>({products,transactions,cart,stockMovements,suppliers,manualCustomers,purchases,expenses,debtPayments,invoiceSeq}),
   addToCart,checkoutCart,deleteProduct,renderAll,renderCart,readNumber,escapeHtml,
   processScanStockCode,processSellStockCode,updatePreview
 };})();`);
@@ -30,16 +30,16 @@ function boot(storage = new Map()) {
   return {app:context.app,el:element,storage,submit:id=>element(id).handlers.submit({preventDefault(){}})};
 }
 const fresh=boot();
-for(const key of ['products','transactions','cart','stockMovements','suppliers','manualCustomers']) assert.equal(fresh.app.state()[key].length,0,key);
+for(const key of ['products','transactions','cart','stockMovements','suppliers','manualCustomers','purchases','expenses','debtPayments']) assert.equal(fresh.app.state()[key].length,0,key);
 assert.equal(fresh.app.state().invoiceSeq,1);
 const old=new Map([['shop_data_v1',JSON.stringify({version:1,products:[{name:'Old item'}]})]]);
 const reset=boot(old);assert.equal(reset.app.state().products.length,0);
-assert.equal(JSON.parse(old.get('shop_data_v1')).version,2);
+assert.equal(JSON.parse(old.get('shop_data_v1')).version,3);
 const a=boot();
-for(let i=1;i<=9;i++) a.app.state().products.push({id:'p'+i,name:'Test '+i,cat:'Test',supplier:'',stock:10,reorder:2,price:2,sold30:0,barcode:i===1?'8801234500017':'test-'+i,expiry:null,promoPercent:0});
+for(let i=1;i<=9;i++) a.app.state().products.push({id:'p'+i,name:'Test '+i,cat:'Test',supplier:'',stock:10,reorder:2,costPrice:1,price:2,sold30:0,barcode:i===1?'8801234500017':'test-'+i,expiry:null,promoPercent:0});
 for(let i=1;i<=4;i++) a.app.state().suppliers.push({id:'s'+i,name:'Supplier '+i,contact:'',phone:'',category:''});
 assert.equal(a.app.state().products.length,9);
-for(const [id,value] of Object.entries({pfName:'New product',pfCat:'__proto__',pfStock:'abc',pfReorder:'2',pfPrice:'1.25',pfPromo:'0',pfBarcode:'test-barcode'})) a.el(id).value=value;
+for(const [id,value] of Object.entries({pfName:'New product',pfCat:'__proto__',pfStock:'abc',pfReorder:'2',pfCost:'0.75',pfPrice:'1.25',pfPromo:'0',pfBarcode:'test-barcode'})) a.el(id).value=value;
 a.submit('productForm');assert.equal(a.app.state().products.length,9);
 a.el('pfStock').value='១០';a.el('pfBarcode').value='8801234500017';
 a.submit('productForm');assert.equal(a.app.state().products.length,9);
@@ -48,6 +48,20 @@ assert.equal(a.app.state().products.length,10);
 assert.equal(a.app.state().products[9].stock,10);
 a.el('sfName').value='Supplier';a.el('sfContact').value='Contact';a.el('sfPhone').value='123';a.el('sfCategory').value='Category';
 a.submit('supplierForm');assert.equal(boot(a.storage).app.state().suppliers.length,5);
+
+const op=boot();
+op.app.state().products.push({id:'p-op',name:'Operation item',cat:'Test',supplier:'',stock:10,reorder:2,costPrice:1,price:3,sold30:0,barcode:'op-1',expiry:null,promoPercent:0});
+op.app.state().suppliers.push({id:'s-op',name:'Operation supplier',contact:'',phone:'',category:'Test'});op.app.renderAll();
+for(const [id,value] of Object.entries({purchaseProduct:'p-op',purchaseSupplier:'s-op',purchaseQty:'5',purchaseUnitCost:'2',purchasePaid:'4',purchaseDate:'2026-09-28'}))op.el(id).value=value;
+op.submit('purchaseForm');
+assert.equal(op.app.state().products[0].stock,15);assert.equal(op.app.state().products[0].costPrice,20/15);assert.equal(op.app.state().purchases[0].due,6);
+for(const [id,value] of Object.entries({expenseDate:'2026-09-28',expenseCategory:'ដឹកជញ្ជូន',expenseDescription:'Delivery',expenseAmount:'1.50',expensePaymentMethod:'cash'}))op.el(id).value=value;
+op.submit('expenseForm');assert.equal(op.app.state().expenses[0].amount,1.5);
+for(const [id,value] of Object.entries({saleProduct:'p-op',saleQty:'1',saleCustomer:'Debt customer',saleStatus:'pending',salePaymentMethod:'cash'}))op.el(id).value=value;
+op.submit('saleForm');assert.equal(op.app.state().transactions[0].paidAmount,0);
+for(const [id,value] of Object.entries({debtCustomer:'Debt customer',debtAmount:'1',debtDate:'2026-09-28',debtPaymentMethod:'khqr'}))op.el(id).value=value;
+op.submit('debtPaymentForm');assert.equal(op.app.state().transactions[0].paidAmount,1);assert.equal(op.app.state().debtPayments[0].amount,1);
+const opReload=boot(op.storage);assert.equal(opReload.app.state().purchases.length,1);assert.equal(opReload.app.state().expenses.length,1);assert.equal(opReload.app.state().debtPayments.length,1);
 for (const bad of ['abc','12abc','-1','1.5','Infinity','1e309','']) {
   a.el('saleQty').value=bad;
   assert.equal(a.app.readNumber('saleQty',1,100,true),null,bad);
@@ -57,10 +71,10 @@ a.app.addToCart('p1');a.app.addToCart('p1');
 a.app.state().products[0].stock=1;
 let count=a.app.state().transactions.length;
 a.app.checkoutCart();assert.equal(a.app.state().transactions.length,count);
-a.el('posStatus').value='paid';a.app.state().products[0].stock=2;
+a.el('posStatus').value='paid';a.el('posPaymentMethod').value='cash';a.app.state().products[0].stock=2;
 a.app.checkoutCart();assert.equal(a.app.state().transactions.length,count+1);
 assert.equal(a.app.state().products[0].stock,0);
-a.el('saleProduct').value='p1';a.el('saleQty').value='8';a.el('saleStatus').value='paid';
+a.el('saleProduct').value='p1';a.el('saleQty').value='8';a.el('saleStatus').value='paid';a.el('salePaymentMethod').value='cash';
 a.submit('saleForm');assert.equal(a.app.state().transactions.length,count+1);
 a.el('scanStockQty').value='៣';a.app.processScanStockCode('8801234500017');
 assert.equal(a.app.state().products[0].stock,3);
