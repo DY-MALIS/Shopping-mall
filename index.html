@@ -47,6 +47,7 @@
   }
 
   *{box-sizing:border-box;}
+  [hidden]{display:none !important;}
   body{
     margin:0; background:var(--page); color:var(--ink);
     font-family:'Noto Sans Khmer', system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -1936,8 +1937,16 @@
       ).then(function(controls){
         cameraControls = controls;
         cameraStatusEl.textContent = "តម្រឹមបាកូដឲ្យស្ថិតក្នុងស៊ុមខាងលើ";
-      }).catch(function(){
-        showCameraFail("កាំម៉េរ៉ាមិនអាចបើកបាននៅត្រង់ទំព័រនេះទេ (ជាធម្មតាដោយសារការកំណត់សុវត្ថិភាពរបស់ទំព័រ) — សូមប្រើឧបករណ៍ស្កេនបាកូដ ឬវាយបញ្ចូលលេខដោយដៃជំនួសវិញ");
+      }).catch(function(error){
+        var name = error && error.name;
+        var message = name === "NotAllowedError" || name === "SecurityError"
+          ? "កាមេរ៉ាត្រូវបានបិទសិទ្ធិ។ សូមអនុញ្ញាត Camera ក្នុងការកំណត់គេហទំព័ររបស់ browser រួចបើកស្កេនម្តងទៀត។"
+          : name === "NotFoundError"
+          ? "រកមិនឃើញកាមេរ៉ាទេ។ សូមភ្ជាប់កាមេរ៉ា ឬប្រើទូរស័ព្ទដែលមានកាមេរ៉ា។"
+          : name === "NotReadableError"
+          ? "មិនអាចប្រើកាមេរ៉ាបាន។ សូមបិទកម្មវិធីផ្សេងដែលកំពុងប្រើកាមេរ៉ា រួចសាកល្បងម្តងទៀត។"
+          : "មិនអាចបើកកាមេរ៉ាបាន។ សូមបើកវេបសាយតាម HTTPS ក្នុង Chrome ឬ Edge ហើយពិនិត្យសិទ្ធិកាមេរ៉ា។";
+        showCameraFail(message);
       });
     } catch(e){
       showCameraFail("កាំម៉េរ៉ាមិនអាចប្រើបាននៅត្រង់ទំព័រនេះទេ — សូមប្រើឧបករណ៍ស្កេនបាកូដ ឬវាយបញ្ចូលលេខដោយដៃជំនួសវិញ");
