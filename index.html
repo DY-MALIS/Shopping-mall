@@ -718,10 +718,13 @@
               <div class="card-title">អតិថិជន</div>
               <div class="card-sub" id="custCountSub">អតិថិជនសរុប</div>
             </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button type="button" class="btn btn-ghost" id="importCustomersBtn">នាំចូលអតិថិជនពីឯកសារ</button>
             <button class="btn btn-brand" id="addCustomerBtn">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
               បន្ថែមអតិថិជន
             </button>
+            </div>
           </div>
           <div class="filter-row">
             <input class="text-input" style="max-width:260px;" id="custSearch" type="text" placeholder="ស្វែងរកអតិថិជន…">
@@ -978,6 +981,29 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="customerImportOverlay">
+  <div class="modal" style="max-width:720px;" role="dialog" aria-modal="true" aria-labelledby="customerImportTitle">
+    <div class="modal-head">
+      <div class="modal-title" id="customerImportTitle">នាំចូលអតិថិជនពីឯកសារ</div>
+      <button type="button" class="modal-x" id="customerImportClose" aria-label="បិទ">✕</button>
+    </div>
+    <p style="font-size:13px;color:var(--ink-2);">Word (.docx), PDF ដែលមានអក្សរ, Excel (.xlsx/.xls), CSV, TSV និង TXT · អតិបរមា 10 MB / ២០០០ នាក់។ ឯកសាររូបស្កេនត្រូវបម្លែងជា​អក្សរ (OCR) ជាមុន។</p>
+    <p style="font-size:12px;color:var(--ink-muted);">ប្រើមួយឈ្មោះក្នុងមួយបន្ទាត់ ឬតារាង «ឈ្មោះ» និង «លេខទូរស័ព្ទ»។ ការអានធ្វើក្នុង browser; ឯកសារមិនត្រូវបានផ្ញើទៅ server ទេ។ Word/PDF/Excel ត្រូវការអ៊ីនធឺណិតដើម្បីទាញយកកម្មវិធីអាន។</p>
+    <div class="field"><label for="customerImportFile">ជ្រើសឯកសារ</label><input id="customerImportFile" type="file" accept=".docx,.pdf,.xlsx,.xls,.csv,.tsv,.txt"></div>
+    <p id="customerImportStatus" role="status" aria-live="polite" style="font-size:13px;"></p>
+    <div id="customerImportPreview" hidden>
+      <p style="font-size:12px;">សូមពិនិត្យ និងកែឈ្មោះ/ទូរស័ព្ទ។ ដោះធីកជួរដែលមិនចង់បញ្ចូល។ ឈ្មោះស្ទួននឹងរំលង ដោយរក្សាទិន្នន័យចាស់។</p>
+      <div class="table-scroll" style="max-height:320px;overflow:auto;">
+        <table><thead><tr><th>ជ្រើស</th><th>ឈ្មោះអតិថិជន</th><th>ទូរស័ព្ទ</th></tr></thead><tbody id="customerImportRows"></tbody></table>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="customerImportCancel">បោះបង់</button>
+      <button type="button" class="btn btn-brand" id="customerImportConfirm" disabled>បញ្ចូលទៅបញ្ជីអតិថិជន</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="customerModalOverlay">
   <div class="modal">
     <div class="modal-head">
@@ -1036,7 +1062,8 @@
 
 <div class="toast-wrap" id="toastWrap"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/umd/index.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/umd/index.min.js"></script>
+<script src="customer-import.js"></script>
 <script>
 (function(){
   "use strict";
@@ -2312,6 +2339,68 @@
 
   /* ================= Customers page ================= */
   var custSearchTerm = "";
+  var importOverlay = document.getElementById("customerImportOverlay");
+  var importFile = document.getElementById("customerImportFile");
+  var importStatus = document.getElementById("customerImportStatus");
+  var importRows = document.getElementById("customerImportRows");
+  var importConfirm = document.getElementById("customerImportConfirm");
+  var importGeneration = 0;
+  function closeCustomerImport(){
+    importGeneration++;
+    importOverlay.classList.remove("open");
+    document.getElementById("importCustomersBtn").focus();
+  }
+  document.getElementById("importCustomersBtn").addEventListener("click", function(){
+    importGeneration++;importFile.value="";importRows.innerHTML="";importStatus.textContent="";
+    document.getElementById("customerImportPreview").hidden=true;
+    importConfirm.disabled=true;importOverlay.classList.add("open");importFile.focus();
+  });
+  document.getElementById("customerImportClose").addEventListener("click", closeCustomerImport);
+  document.getElementById("customerImportCancel").addEventListener("click", closeCustomerImport);
+  importOverlay.addEventListener("click", function(e){if(e.target===importOverlay)closeCustomerImport();});
+  importOverlay.addEventListener("keydown", function(e){if(e.key==="Escape")closeCustomerImport();});
+  importFile.addEventListener("change", async function(){
+    var generation=++importGeneration;
+    importConfirm.disabled=true;importRows.innerHTML="";
+    document.getElementById("customerImportPreview").hidden=true;
+    if(!importFile.files[0]){importStatus.textContent="";return;}
+    importStatus.textContent="កំពុងអានឯកសារ…";
+    try{
+      var rows=await CustomerImport.read(importFile.files[0]);
+      if(generation!==importGeneration)return;
+      importRows.innerHTML=rows.map(function(c,i){
+        return '<tr><td><input type="checkbox" checked aria-label="ជ្រើសជួរ '+(i+1)+'"></td>'+
+          '<td><input class="text-input import-name" aria-label="ឈ្មោះជួរ '+(i+1)+'" maxlength="200" value="'+escapeHtml(c.name)+'"></td>'+
+          '<td><input class="text-input import-phone" aria-label="ទូរស័ព្ទជួរ '+(i+1)+'" maxlength="50" value="'+escapeHtml(c.phone)+'"></td></tr>';
+      }).join("");
+      document.getElementById("customerImportPreview").hidden=false;
+      importStatus.textContent="អានបាន "+rows.length+" ជួរ។ សូមពិនិត្យមុនបញ្ចូល។";
+      importConfirm.disabled=false;
+    }catch(error){
+      if(generation!==importGeneration)return;
+      importStatus.textContent="មិនអាចអានឯកសារ៖ "+(error.name==="PasswordException"?"PDF មានពាក្យសម្ងាត់។ សូមប្រើឯកសារដែលបានដោះសោ។":error.message||"សូមពិនិត្យឯកសារ ហើយសាកល្បងម្តងទៀត។");
+    }
+  });
+  importConfirm.addEventListener("click", function(){
+    var selected=[];
+    importRows.querySelectorAll("tr").forEach(function(row){
+      if(row.querySelector('input[type="checkbox"]').checked)selected.push({name:row.querySelector('.import-name').value,phone:row.querySelector('.import-phone').value});
+    });
+    var result=CustomerImport.unique(selected,getCustomerStats());
+    if(!result.added.length){importStatus.textContent="មិនមានឈ្មោះថ្មីទេ។ សូមជ្រើសឈ្មោះដែលមិនទទេ និងមិនស្ទួន។";return;}
+    // Persist the complete change before updating the UI; a quota error must not lose the preview.
+    var previous=manualCustomers;
+    try{
+      if(storageBlocked)throw Error("ការរក្សាទុកត្រូវបានរារាំង");
+      var saved=JSON.parse(localStorage.getItem("shop_data_v1")||"null");
+      if(!saved || saved.version!==2)throw Error("មិនអាចរក្សាទុកបាន");
+      manualCustomers=manualCustomers.concat(result.added);
+      saved.manualCustomers=manualCustomers;
+      localStorage.setItem("shop_data_v1",JSON.stringify(saved));
+    }catch(error){manualCustomers=previous;importStatus.textContent="មិនអាចរក្សាទុកបាន។ សូមពិនិត្យទំហំផ្ទុក browser រួចសាកល្បងម្ដងទៀត។";return;}
+    importConfirm.disabled=true;closeCustomerImport();renderAll();
+    toast("បាននាំចូល "+result.added.length+" នាក់ និងរំលងឈ្មោះស្ទួន "+result.skipped+" នាក់។");
+  });
   function renderCustomers(){
     var all = getCustomerStats();
     var list = all.filter(function(c){ return !custSearchTerm || c.name.toLowerCase().indexOf(custSearchTerm.toLowerCase()) !== -1; });
